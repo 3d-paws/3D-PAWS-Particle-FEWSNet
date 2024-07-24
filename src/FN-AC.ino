@@ -40,8 +40,7 @@ PRODUCT_VERSION(24);
  *                         Added Copyright
  *                         Updated OLED deisplay code to support both size displays
  *                         Console Enable moved from A4 to D8 
- *          2024-07-23 RJB Version 25
- *                         Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
+ *          2024-07-23 RJB Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
