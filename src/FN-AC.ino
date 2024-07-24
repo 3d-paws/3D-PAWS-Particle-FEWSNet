@@ -1,6 +1,6 @@
-PRODUCT_VERSION(23);
+PRODUCT_VERSION(24);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20240617"
+#define VERSION_INFO "FNAC-20240723"
 
 /*
  *======================================================================================================================
@@ -39,7 +39,9 @@ PRODUCT_VERSION(23);
  *                         Split main code into include file
  *                         Added Copyright
  *                         Updated OLED deisplay code to support both size displays
- *                         Console Enable moved from A4 to D8      
+ *                         Console Enable moved from A4 to D8 
+ *          2024-07-23 RJB Version 25
+ *                         Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.

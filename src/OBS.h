@@ -185,7 +185,7 @@ void OBS_Do() {
   }
 
   if (WBT_exists) {
-    wb_temp = wbt_calculate(mcp1_temp, htu1_humid);
+    wb_temp = wbt_calculate(mcp1_temp, sht1_humid);
   }
 
   if (WBGT_exists) {
