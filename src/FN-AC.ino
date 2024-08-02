@@ -41,6 +41,7 @@ PRODUCT_VERSION(24);
  *                         Updated OLED deisplay code to support both size displays
  *                         Console Enable moved from A4 to D8 
  *          2024-07-23 RJB Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
+ *          2024-07-31 RJB Removed requirement for Serial Console Enable for external sim programming
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
@@ -69,9 +70,9 @@ PRODUCT_VERSION(24);
  *                          Since the data is spread across a large number of flash sectors, 
  *                          flash erase-write cycle limits should not be an issue in general. 
  * 
- * D8   = Interrupt For Rain Gauge
+ * D8   = Serial Console (Ground Pin to Enable)
  * D7   = On Board LED - Reserved for LoRa IRQ when not using Grove Shield
- * D6   = Interrupt For Wind Speed
+ * D6   = 
  * D5   = SD Card Chip Select
  * D4   = SPI1 MSIO - Reserved for LoRa
  * D3   = SPI1 MOSI - Reserved for LoRa
@@ -83,7 +84,7 @@ PRODUCT_VERSION(24);
  * A1   = WatchDog Monitor Heartbeat
  * A2   = When using Grove Shield pin used for Rain2 Gauge IRQ
  * A3   = When using Grove Shield pin used for Rain1 Gauge IRQ
- * A4   = Serial Console (Ground Pin to Enable)
+ * A4   = 
  * A5   = When using Grove Shield pin used for Lora IRQ
  * D13  = SPIO CLK    SD Card
  * D12  = SPI0 MOSI   SD Card
