@@ -1,6 +1,6 @@
 PRODUCT_VERSION(24);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20240723"
+#define VERSION_INFO "FNAC-20240802"
 
 /*
  *======================================================================================================================
@@ -41,7 +41,7 @@ PRODUCT_VERSION(24);
  *                         Updated OLED deisplay code to support both size displays
  *                         Console Enable moved from A4 to D8 
  *          2024-07-23 RJB Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
- *          2024-07-31 RJB Removed requirement for Serial Console Enable for external sim programming
+ *          2024-08-02 RJB Removed requirement for Serial Console Enable for external sim programming
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
