@@ -1,6 +1,6 @@
-PRODUCT_VERSION(26);
+PRODUCT_VERSION(27);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20240802"
+#define VERSION_INFO "FNAC-20240807"
 
 /*
  *======================================================================================================================
@@ -43,6 +43,9 @@ PRODUCT_VERSION(26);
  *          2024-07-23 RJB Bug Fix wbt_calculate(mcp1_temp, htu1_humid) Needs to use sht1_humid
  *          2024-08-02 RJB Version 26
  *                         Removed requirement for Serial Console Enable for external sim programming
+ *          2024-08-07 RJB Version 27
+ *                         Added code to support Particle DoAction (REBOOT, CRT). 
+ *                         Support of Reset NOW removed
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
@@ -457,12 +460,12 @@ void setup() {
   Particle.setDisconnectOptions(CloudDisconnectOptions().graceful(true).timeout(5s));
   Particle.connect();
 
-  // Setup Remote Reboot Function, Expects parameter "NOW" to be passed from Particle
-  if (Particle.function("Reboot", Function_Reboot)) {
-    Output ("FunRebootSet:OK");
+  // Setup Remote Function to DoAction, Expects a parameter to be passed from Particle to control what action
+  if (Particle.function("DoAction", Function_DoAction)) {
+    Output ("DoAction:OK");
   }
   else {
-    Output ("FunRebootSet:ERR");
+    Output ("DoAction:ERR");
   }
 
   Time_of_next_obs = Time.now() + 60;  // Schedule a obs 60s from not to give network a change to connect

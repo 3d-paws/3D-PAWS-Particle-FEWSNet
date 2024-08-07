@@ -46,25 +46,31 @@ void DeviceReset() {
 
 /*
  * ======================================================================================================================
- * Function_Reboot() - Handler for Particle Function Reset            
+ * Function_DoAction() - Handler for Particle Function DoAction     
  * ======================================================================================================================
  */
-int Function_Reboot(String s) {
-  if (strcmp (s,"NOW") == 0) {
-    Output("Handler:Reboot:OK");
+int Function_DoAction(String s) {
+  if (strcmp (s,"REBOOT") == 0) {  // Reboot
+    Output("DoAction:REBOOT");
     EEPROM_SaveUnreportedRain();
     delay(1000);
 
     DeviceReset();
 
-    // Resets the device, just like hitting the reset button or powering down and back up.
-    System.reset();
-
-    // Never gets here and thus we can never send a ack to Particle Portal
+    // Never gets here and thus can never send a ack to Particle Portal
     return(0);  
   }
+
+  else if (strcmp (s,"CRT") == 0) { // Clear Rain Totals
+    time32_t current_time = Time.now();
+    Output("DoAction:CRT");
+    EEPROM_ClearRainTotals(current_time);
+    // Display EEPROM Information 
+    // EEPROM_Dump();   
+    return(0);
+  }
   else {
-    Output("Handler:Reboot:ERR"); 
+    Output("DoAction:UKN"); 
     return(-1);
   }
 }
@@ -93,7 +99,8 @@ void SimChangeCheck() {
     Output (msgbuf);
   }
 
-  if (SerialConsoleEnabled && SD_exists) {
+  // if (SerialConsoleEnabled && SD_exists) {
+  if (SD_exists) {
     // Test for file SIM.TXT
     if (SD.exists(SD_sim_file)) {
       fp = SD.open(SD_sim_file, FILE_READ); // Open the file for reading, starting at the beginning of the file.
