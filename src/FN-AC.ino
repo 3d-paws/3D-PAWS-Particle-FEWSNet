@@ -46,6 +46,8 @@ PRODUCT_VERSION(27);
  *          2024-08-07 RJB Version 27
  *                         Added code to support Particle DoAction (REBOOT, CRT). 
  *                         Support of Reset NOW removed
+ *          2024-09-11 RJB When setting SIM to INTERNAL we now set changed = true to
+ *                         report success and reboot message.
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
