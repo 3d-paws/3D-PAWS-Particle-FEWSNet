@@ -1,4 +1,4 @@
-PRODUCT_VERSION(27);
+PRODUCT_VERSION(28);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
 #define VERSION_INFO "FNAC-20240911"
 
@@ -48,6 +48,12 @@ PRODUCT_VERSION(27);
  *                         Support of Reset NOW removed
  *          2024-09-11 RJB When setting SIM to INTERNAL we now set changed = true to
  *                         report success and reboot message.
+ *                         Changed Td to Ta in wbgt_calculate_opt2() function
+ *          2024-10-07 RJB Version 28
+ *                         Improved hi_calculate() function.
+ *          2024-11-05 RJB Discovered BMP390 first pressure reading is bad. Added read pressure to bmx_initialize()
+ *                         Bug fixes for 2nd BMP sensor in bmx_initialize() using first sensor data structure
+ *                         Now will only send humidity if bmx sensor supports it.
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.

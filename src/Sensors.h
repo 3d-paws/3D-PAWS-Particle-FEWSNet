@@ -228,6 +228,7 @@ void bmx_initialize() {
   
   // 1st Bosch Sensor - Need to see which (BMP, BME, BM3) is plugged in
   BMX_1_chip_id = get_Bosch_ChipID(BMX_ADDRESS_1);
+
   switch (BMX_1_chip_id) {
     case BMP280_CHIP_ID :
       if (!bmp1.begin(BMX_ADDRESS_1)) { 
@@ -239,6 +240,7 @@ void bmx_initialize() {
         BMX_1_exists = true;
         BMX_1_type = BMX_TYPE_BMP280;
         msgp = (char *) "BMP1 OK";
+        float p = bmp1.readPressure();
       }
     break;
 
@@ -252,13 +254,15 @@ void bmx_initialize() {
         else {
           BMX_1_exists = true;
           BMX_1_type = BMX_TYPE_BMP390;
-          msgp = (char *) "BMP390_1 OK";         
+          msgp = (char *) "BMP390_1 OK"; 
+          float p = bm31.readPressure();       
         }      
       }
       else {
         BMX_1_exists = true;
         BMX_1_type = BMX_TYPE_BME280;
         msgp = (char *) "BME280_1 OK";
+        float p = bme1.readPressure();
       }
     break;
 
@@ -272,6 +276,7 @@ void bmx_initialize() {
         BMX_1_exists = true;
         BMX_1_type = BMX_TYPE_BMP388;
         msgp = (char *) "BM31 OK";
+        float p = bm31.readPressure();
       }
     break;
 
@@ -285,7 +290,7 @@ void bmx_initialize() {
   BMX_2_chip_id = get_Bosch_ChipID(BMX_ADDRESS_2);
   switch (BMX_2_chip_id) {
     case BMP280_CHIP_ID :
-      if (!bmp1.begin(BMX_ADDRESS_2)) { 
+      if (!bmp2.begin(BMX_ADDRESS_2)) { 
         msgp = (char *) "BMP2 ERR";
         BMX_2_exists = false;
         SystemStatusBits |= SSB_BMX_2;  // Turn On Bit          
@@ -294,12 +299,13 @@ void bmx_initialize() {
         BMX_2_exists = true;
         BMX_2_type = BMX_TYPE_BMP280;
         msgp = (char *) "BMP2 OK";
+        float p = bmp2.readPressure();
       }
     break;
 
     case BME280_BMP390_CHIP_ID :
       if (!bme2.begin(BMX_ADDRESS_2)) { 
-        if (!bm31.begin_I2C(BMX_ADDRESS_2)) {  // Perhaps it is a BMP390
+        if (!bm32.begin_I2C(BMX_ADDRESS_2)) {  // Perhaps it is a BMP390
           msgp = (char *) "BMX2 ERR";
           BMX_2_exists = false;
           SystemStatusBits |= SSB_BMX_2;  // Turn On Bit          
@@ -307,26 +313,29 @@ void bmx_initialize() {
         else {
           BMX_2_exists = true;
           BMX_2_type = BMX_TYPE_BMP390;
-          msgp = (char *) "BMP390_2 OK";          
+          msgp = (char *) "BMP390_2 OK"; 
+          float p = bm32.readPressure();         
         }
       }
       else {
         BMX_2_exists = true;
         BMX_2_type = BMX_TYPE_BME280;
         msgp = (char *) "BME280_2 OK";
+        float p = bme2.readPressure();
       }
     break;
 
     case BMP388_CHIP_ID :
-      if (!bm31.begin_I2C(BMX_ADDRESS_2)) { 
-        msgp = (char *) "BM31 ERR";
+      if (!bm32.begin_I2C(BMX_ADDRESS_2)) { 
+        msgp = (char *) "BM32 ERR";
         BMX_2_exists = false;
         SystemStatusBits |= SSB_BMX_2;  // Turn On Bit          
       }
       else {
         BMX_2_exists = true;
         BMX_2_type = BMX_TYPE_BMP388;
-        msgp = (char *) "BM31 OK";
+        msgp = (char *) "BM32 OK";
+        float p = bm32.readPressure();
       }
     break;
 
@@ -577,10 +586,23 @@ void hi_initialize() {
 
 /* 
  *=======================================================================================================================
- * hi_calculate() - Compute Heat Index Temperature Returens Fahrenheit
+ * hi_calculate() - Compute Heat Index Temperature Returns Celsius
+ * 
+ * SEE https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
+ * 
+ * The regression equation of Rothfusz is:
+ * HI = -42.379 + 2.04901523*T + 10.14333127*RH - .22475541*T*RH - .00683783*T*T - .05481717*RH*RH + .00122874*T*T*RH + 
+ *      .00085282*T*RH*RH - .00000199*T*T*RH*RH
+ * 
+ * The Rothfusz regression is not appropriate when conditions of temperature and humidity 
+ * warrant a heat index value below about 80 degrees F. In those cases, a simpler formula 
+ * is applied to calculate values consistent with Steadman's results:
+ * HI = 0.5 * {T + 61.0 + [(T-68.0)*1.2] + (RH*0.094)} 
  *=======================================================================================================================
  */
 float hi_calculate(float T, float RH) {
+  float HI;
+  float HI_f;
 
   if ((T == -999.9) || (RH == -999.9)) {
     return (-999.9);
@@ -588,27 +610,58 @@ float hi_calculate(float T, float RH) {
 
   // Convert temperature from Celsius to Fahrenheit
   float T_f = T * 9.0 / 5.0 + 32.0;
+
+  // Steadman's equation
+  HI_f = 0.5 * (T_f + 61.0 + ((T_f - 68.0)*1.2) + (RH * 0.094));
+
+  // Compute the average of the simple HI with the actual temperature [deg F]
+  HI_f = (HI_f + T_f) / 2;
+
+  if (HI_f >= 80.0) { 
+    // Use Rothfusz's equation
     
-  // Constants for the Heat Index formula
-  float c1 = -42.379;
-  float c2 = 2.04901523;
-  float c3 = 10.14333127;
-  float c4 = -0.22475541;
-  float c5 = -0.00683783;
-  float c6 = -0.05481717;
-  float c7 = 0.00122874;
-  float c8 = 0.00085282;
-  float c9 = -0.00000199;
+    // Constants for the Heat Index formula
+    float c1 = -42.379;
+    float c2 = 2.04901523;
+    float c3 = 10.14333127;
+    float c4 = -0.22475541;
+    float c5 = -0.00683783;
+    float c6 = -0.05481717;
+    float c7 = 0.00122874;
+    float c8 = 0.00085282;
+    float c9 = -0.00000199;
     
-  // Heat Index calculation
-  float HI_f = c1 + (c2 * T_f) + (c3 * RH) + (c4 * T_f * RH) +
-               (c5 * T_f * T_f) + (c6 * RH * RH) + 
-               (c7 * T_f * T_f * RH) + (c8 * T_f * RH * RH) +
-               (c9 * T_f * T_f * RH * RH);
-                 
+    // Heat Index calculation
+    HI_f = c1 + (c2 * T_f) + (c3 * RH) + (c4 * T_f * RH) +
+                (c5 * T_f * T_f) + (c6 * RH * RH) + 
+                (c7 * T_f * T_f * RH) + (c8 * T_f * RH * RH) +
+                (c9 * T_f * T_f * RH * RH);
+
+    if ((RH < 13.0) && ((T_f > 80.0) && (T_f < 112.0)) ) {
+      // If the RH is less than 13% and the temperature is between 80 and 112 degrees F, 
+      // then the following adjustment is subtracted from HI: 
+      // ADJUSTMENT = [(13-RH)/4]*SQRT{[17-ABS(T-95.)]/17}
+
+      float Adjustment = ( (13 - RH) / 4 ) * sqrt( (17 - abs(T_f - 95.0) ) / 17 );
+
+      HI_f = HI_f - Adjustment;
+
+    }
+    else if ((RH > 85.0) && ((T_f > 80.0) && (T_f < 87.0)) ) {
+      // If the RH is greater than 85% and the temperature is between 80 and 87 degrees F, 
+      // then the following adjustment is added to HI: 
+      // ADJUSTMENT = [(RH-85)/10] * [(87-T)/5]
+
+      float Adjustment = ( (RH - 85) / 10 ) * ( (87.0 - T_f) / 5 );
+
+      HI_f = HI_f + Adjustment;
+    }
+  }
+
   // Convert Heat Index from Fahrenheit to Celsius
-  float HI = (HI_f - 32.0) * 5.0 / 9.0;
-    
+  HI = (HI_f - 32.0) * 5.0 / 9.0;
+
+  // Quality Control Check
   HI = (isnan(HI) || (HI < QC_MIN_HI)  || (HI >QC_MAX_HI))  ? QC_ERR_HI  : HI;
 
   return (HI);
@@ -664,21 +717,21 @@ double wbgt_calculate_opt2(double Tc, double HIc) {
   const float b = 0.2;
   const float c = 0.1;
  
-  // Using temperature as a proxy for dry bulb temperature (Td)
-  float Td = Tc * 9.0 / 5.0 + 32.0;
+  // Using temperature as a proxy for dry bulb temperature (Ta)
+  float Ta = Tc * 9.0 / 5.0 + 32.0;
  
   // Using heat index as a proxy for wet bulb temperature (Tw)
   float Tw = HIc * 9.0 / 5.0 + 32.0;
 
   // Assuming globe temperature (Tg) as average of temperature and heat index
-  float Tg = (Td + Tw) / 2;
+  float Tg = (Ta + Tw) / 2;
 
   // Calculate WBGT using simplified formula
-  float WBGT = a * Tw + b * Tg + c * Td;
+  float WBGT = a * Tw + b * Tg + c * Ta;
 
   /*
-  sprintf (msgbuf, "Td[%d.%d] Tw[%d.%d] Tg[%d.%d] WBGT[%d.%d]", 
-    (int)Td, (int)(Td*100)%100, 
+  sprintf (msgbuf, "Ta[%d.%d] Tw[%d.%d] Tg[%d.%d] WBGT[%d.%d]", 
+    (int)Ta, (int)(Ta*100)%100, 
     (int)Tw, (int)(Tw*100)%100,
     (int)Tg, (int)(Tg*100)%100, 
     (int)WBGT, (int)(WBGT*100)%100
