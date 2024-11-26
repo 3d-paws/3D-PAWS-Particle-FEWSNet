@@ -1,6 +1,6 @@
-PRODUCT_VERSION(28);
+PRODUCT_VERSION(36);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20240911"
+#define VERSION_INFO "FNAC-20241105v36"
 
 /*
  *======================================================================================================================
@@ -51,9 +51,12 @@ PRODUCT_VERSION(28);
  *                         Changed Td to Ta in wbgt_calculate_opt2() function
  *          2024-10-07 RJB Version 28
  *                         Improved hi_calculate() function.
+ *          Version 36 Released on 2024-11-26 
  *          2024-11-05 RJB Discovered BMP390 first pressure reading is bad. Added read pressure to bmx_initialize()
  *                         Bug fixes for 2nd BMP sensor in bmx_initialize() using first sensor data structure
  *                         Now will only send humidity if bmx sensor supports it.
+ *          2024-11-26 RJB Added INFO_Do() at boot and when called via Do_Action with "INFO"
+ *                         Added Do_Action feature "SEND" to send OBS that are cued
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
@@ -226,21 +229,21 @@ PRODUCT_VERSION(28);
   48 = This observation is from the N2S file. And when it was saved to the N2S file, the N2S file existed and this observation was appended.
 */
 
-unsigned int SystemStatusBits = SSB_PWRON; // Set bit 0 for initial value power on. Bit 0 is cleared after first obs
-bool JustPoweredOn = true;         // Used to clear SystemStatusBits set during power on device discovery
+#define MAX_MSGBUF_SIZE 1024
 
 /*
  * ======================================================================================================================
  *  Globals
  * ======================================================================================================================
  */
-#define MAX_MSGBUF_SIZE 1024
 char msgbuf[MAX_MSGBUF_SIZE]; // Used to hold messages
 char *msgp;                   // Pointer to message text
 char Buffer32Bytes[32];       // General storage
-
 int  LED_PIN = D7;            // Built in LED
 bool TurnLedOff = false;      // Set true in rain gauge interrupt
+unsigned int SystemStatusBits = SSB_PWRON; // Set bit 0 for initial value power on. Bit 0 is cleared after first obs
+bool JustPoweredOn = true;    // Used to clear SystemStatusBits set during power on device discovery
+bool SendSystemInformation = true; // Send System Information to Particle Cloud. True means we will send at boot.
 bool PostedResults;           // How we did in posting Observation and Need to Send Observations
 
 time32_t Time_of_last_obs = 0;
@@ -282,6 +285,7 @@ uint32_t SD_n2s_max_filesz = 200 * 8 * 24;  // Keep a little over 2 days. When i
 
 char SD_sim_file[] = "SIM.TXT";         // File used to set Ineternal or External sim configuration
 char SD_simold_file[] = "SIMOLD.TXT";   // SIM.TXT renamed to this after sim configuration set
+char SD_INFO_FILE[] = "INFO.TXT";       // Store INFO information in this file. Every INFO call will overwrite content
 
 /*
  * ======================================================================================================================
@@ -306,6 +310,8 @@ PMIC pmic;
 #include "OBS.h"                  // Do Observation Processing
 #include "SM.h"                   // Station Monitor
 #include "PS.h"                   // Particle Support Functions
+#include "INFO.h"                 // Station Fonformation
+
 
 /*
  * ======================================================================================================================
@@ -476,7 +482,7 @@ void setup() {
     Output ("DoAction:ERR");
   }
 
-  Time_of_next_obs = Time.now() + 60;  // Schedule a obs 60s from not to give network a change to connect
+  Time_of_next_obs = Time.now() + 60;  // Schedule a obs 60s from now to give network a chance to connect
 
   Output ("LOOP START");
 }
@@ -546,6 +552,11 @@ void loop() {
           LastTimeUpdate = System.millis();
         }
       }
+
+      if (SendSystemInformation && Particle.connected()) {
+        INFO_Do(); // Function sets SendSystemInformation back to false.
+      }
+
     }
     else {
       stc_timestamp();

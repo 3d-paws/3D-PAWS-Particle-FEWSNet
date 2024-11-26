@@ -61,6 +61,18 @@ int Function_DoAction(String s) {
     return(0);  
   }
 
+  else if (strcmp (s,"INFO") == 0) {  // Send System Information
+    Output("DoAction:INFO");
+    SendSystemInformation=true;
+    return(0);  
+  }
+
+  else if (strcmp (s,"SEND") == 0) {  // Send OBS Now
+    Output("DoAction:SEND");
+    Time_of_next_obs=0;
+    return(0);  
+  }
+
   else if (strcmp (s,"CRT") == 0) { // Clear Rain Totals
     time32_t current_time = Time.now();
     Output("DoAction:CRT");
