@@ -57,6 +57,9 @@ PRODUCT_VERSION(36);
  *                         Now will only send humidity if bmx sensor supports it.
  *          2024-11-26 RJB Added INFO_Do() at boot and when called via Do_Action with "INFO"
  *                         Added Do_Action feature "SEND" to send OBS that are cued
+ *          2024-11-28 RJB Improved rain total handing 
+ *                         Modified EEPROM_SaveUnreportedRain() to tightened code around clearing rain interrupt counters
+
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.

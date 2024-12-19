@@ -207,12 +207,25 @@ void EEPROM_UpdateRainTotals(float rgt1, float rgt2) {
 void EEPROM_SaveUnreportedRain() {
   if (raingauge1_interrupt_count || raingauge2_interrupt_count) {
     unsigned long rgds;     // rain gauge delta seconds, seconds since last rain gauge observation logged
-    float rain1 = raingauge1_interrupt_count * 0.2;
-    float rain2 = raingauge2_interrupt_count * 0.2;
+    float rain1, rain2;
+
     rgds = (System.millis()-raingauge1_interrupt_stime)/1000;  // seconds since last rain gauge observation logged
+    rain1 = raingauge1_interrupt_count * 0.2;
+    raingauge1_interrupt_count = 0;
+    raingauge1_interrupt_stime = System.millis();
+    raingauge1_interrupt_ltime = 0; // used to debounce the tip
+    // QC Check - Max Rain for period is (Observations Seconds / 60s) *  Max Rain for 60 Seconds
     rain1 = (isnan(rain1) || (rain1 < QC_MIN_RG) || (rain1 > ((rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain1;
+
+
     rgds = (System.millis()-raingauge2_interrupt_stime)/1000;  // seconds since last rain gauge observation logged
+    rain2 = raingauge2_interrupt_count * 0.2;
+    raingauge2_interrupt_count = 0;
+    raingauge2_interrupt_stime = System.millis();
+    raingauge2_interrupt_ltime = 0; // used to debounce the tip
+    // QC Check - Max Rain for period is (Observations Seconds / 60s) *  Max Rain for 60 Seconds
     rain2 = (isnan(rain2) || (rain2 < QC_MIN_RG) || (rain2 > ((rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain2;
+
     EEPROM_UpdateRainTotals(rain1, rain2);
   }
 }
