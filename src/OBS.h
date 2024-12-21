@@ -364,6 +364,18 @@ void OBS_Do() {
         writer.name("hh2").value(hih8_humid, 2);
       }
 
+      if (HI_exists) {
+        writer.name("hi").value(heat_index, 2);
+      }
+
+      if (WBT_exists) {
+        writer.name("wbt").value(wb_temp, 2);
+      }
+
+      if (WBGT_exists) {
+        writer.name("wbgt").value(wbg_temp, 2);
+      }
+
       writer.name("bcs").value(BatteryState);
       writer.name("bpc").value(BatteryPoC, 4);
       writer.name("cfr").value(cfr);

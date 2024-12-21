@@ -1,6 +1,6 @@
-PRODUCT_VERSION(36);
+PRODUCT_VERSION(38);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20241105v36"
+#define VERSION_INFO "FNAC-20241221v38"
 
 /*
  *======================================================================================================================
@@ -57,9 +57,12 @@ PRODUCT_VERSION(36);
  *                         Now will only send humidity if bmx sensor supports it.
  *          2024-11-26 RJB Added INFO_Do() at boot and when called via Do_Action with "INFO"
  *                         Added Do_Action feature "SEND" to send OBS that are cued
+ *          Version 38 Released on 2024-12-21
  *          2024-11-28 RJB Improved rain total handing 
  *                         Modified EEPROM_SaveUnreportedRain() to tightened code around clearing rain interrupt counters
-
+ *                         Bug, Missed adding HI, WBT, WBGT to the N2S observation
+ *          2024-12-21 RJB INFO msg now sent before powering down do to low lipo battery.
+ *                         Upgrading to use deviceOS 6.1.1
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
@@ -608,6 +611,10 @@ void loop() {
     // the battery and transmit with out current drops causing the board to reset or 
     // power down out of our control.
     if (!pmic.isPowerGood() && (System.batteryCharge() <= 10.0)) {
+
+      if (Particle.connected()) {
+        INFO_Do(); // Function sets SendSystemInformation back to false.
+      }
 
       Output("Low Power!");
 
