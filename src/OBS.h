@@ -62,7 +62,7 @@ void OBS_Do() {
   raingauge1_interrupt_stime = System.millis();
   raingauge1_interrupt_ltime = 0; // used to debounce the tip
   // QC Check - Max Rain for period is (Observations Seconds / 60s) *  Max Rain for 60 Seconds
-  rain1 = (isnan(rain1) || (rain1 < QC_MIN_RG) || (rain1 > ((rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain1;
+  rain1 = (isnan(rain1) || (rain1 < QC_MIN_RG) || (rain1 > (((float)rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain1;
 
   // Rain Gauge 2 - Each tip is 0.2mm of rain
   rgds = (System.millis()-raingauge2_interrupt_stime)/1000;  // seconds since last rain gauge observation logged
@@ -71,7 +71,7 @@ void OBS_Do() {
   raingauge2_interrupt_stime = System.millis();
   raingauge2_interrupt_ltime = 0; // used to debounce the tip
   // QC Check - Max Rain for period is (Observations Seconds / 60s) *  Max Rain for 60 Seconds
-  rain2 = (isnan(rain2) || (rain2 < QC_MIN_RG) || (rain2 > ((rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain2;
+  rain2 = (isnan(rain2) || (rain2 < QC_MIN_RG) || (rain2 > (((float)rgds / 60) * QC_MAX_RG)) ) ? QC_ERR_RG : rain2;
 
   EEPROM_UpdateRainTotals(rain1, rain2);
 

@@ -1,6 +1,6 @@
-PRODUCT_VERSION(38);
+PRODUCT_VERSION(41);
 #define COPYRIGHT "Copyright [2024] [University Corporation for Atmospheric Research]"
-#define VERSION_INFO "FNAC-20241221v38"
+#define VERSION_INFO "FNAC-20250911v41"
 
 /*
  *======================================================================================================================
@@ -57,12 +57,14 @@ PRODUCT_VERSION(38);
  *                         Now will only send humidity if bmx sensor supports it.
  *          2024-11-26 RJB Added INFO_Do() at boot and when called via Do_Action with "INFO"
  *                         Added Do_Action feature "SEND" to send OBS that are cued
- *          Version 38 Released on 2024-12-21
+ *          Version 39 Released on 2024-12-21
  *          2024-11-28 RJB Improved rain total handing 
  *                         Modified EEPROM_SaveUnreportedRain() to tightened code around clearing rain interrupt counters
  *                         Bug, Missed adding HI, WBT, WBGT to the N2S observation
  *          2024-12-21 RJB INFO msg now sent before powering down do to low lipo battery.
  *                         Upgrading to use deviceOS 6.1.1
+ *          2025-09-11 RJB In OBS fixed casting bug on rain collection. Added (float)
+ *                          (rain > (((float)rgds / 60) * QC_MAX_RG))
  * NOTES:
  * When there is a successful transmission of an observation any need to send obersavations will be sent. 
  * On transmit a failure of these need to send observations, processing is stopped and the file is deleted.
